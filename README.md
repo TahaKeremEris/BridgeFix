@@ -27,16 +27,31 @@ After pairing, tapping Continue closes the Watch app, and reopening it shows
 -[RUIParser initWithXML:baseURL:style:delegate:]
 ```
 
-Some setup pages (Activation Lock / Apple ID and others) are RemoteUI XML that
-Apple's servers send. The current pages make iOS 15's style code call a method
-that does not exist on iOS 15. The exception is uncaught, so Bridge dies and the
-half-done pairing is rolled back.
+Some setup pages are RemoteUI XML that Apple's servers send. The page that
+breaks is the online Terms and Conditions page (`COSAAGenericTermsUIRequest`),
+which Bridge loads right after watch activation. That page now contains a web
+view that iOS 15 creates as a `WKWebView`. iOS 15's style code
+(`BPSRemoteUISetupStyle`) still treats it as the old `UIWebView` and calls a
+method that `WKWebView` does not have:
+
+```
+NSInvalidArgumentException: -[WKWebView stringByEvaluatingJavaScriptFromString:]:
+unrecognized selector sent to instance 0x...
+```
+
+The exception is uncaught, so Bridge dies and the half-done pairing is rolled
+back.
 
 ## The fix
 
 BridgeFix hooks `-[BPSRemoteUISetupStyle applyToObjectModel:]` in Bridge only.
 It catches the exception and logs it (`[BridgeFix] caught ...` in the syslog),
-so setup keeps going. A page may look a little unstyled.
+so setup keeps going. Only the styling step is skipped, so the Terms page may
+look a little unstyled, but it still shows and works.
+
+Confirmed from a sysdiagnose of the tested setup: the caught line appeared once,
+then Bridge showed the Terms page (`PBBuddyControllerTerms`) and pairing
+finished.
 
 BridgeFix does **not** bypass any pairing checks by itself. You still need a
 pairing tweak (tested with Legizmo Moonstone 6.3).
