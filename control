@@ -1,0 +1,14 @@
+Package: dev.tahakerem.bridgefix
+Name: BridgeFix
+Version: 1.2
+Architecture: iphoneos-arm64
+Description: Stops the Watch app crashing during Apple Watch setup on iOS 15 (use with a pairing tweak like Legizmo)
+Maintainer: Taha Kerem Eris
+Author: Taha Kerem Eris
+Section: Tweaks
+Depends: mobilesubstrate, firmware (>= 15.0)
+Conflicts: com.local.bridgefix
+Replaces: com.local.bridgefix
+Provides: com.local.bridgefix
+Depiction: https://repo.tahakerem.dev/depictions/bridgefix/
+SileoDepiction: https://repo.tahakerem.dev/depictions/bridgefix/depiction.json
